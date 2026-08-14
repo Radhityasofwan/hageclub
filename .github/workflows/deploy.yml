@@ -1,0 +1,53 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Create .env.production
+        run: printf '%s' "$ENV_PRODUCTION" > .env.production
+        env:
+          ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
+
+      - name: Install deploy script dependencies
+        working-directory: scripts
+        run: npm install
+
+      - name: Create deployment archive
+        run: |
+          cd $GITHUB_WORKSPACE/..
+          zip -r hageclub-src.zip hageclub \
+            --exclude "hageclub/node_modules/*" \
+            --exclude "hageclub/.next/*" \
+            --exclude "hageclub/.git/*" \
+            --exclude "hageclub/scripts/node_modules/*" \
+            --exclude "hageclub/*.log" \
+            --exclude "hageclub/.DS_Store"
+          echo "Archive: $(du -sh hageclub-src.zip)"
+          mv hageclub-src.zip hageclub/hageclub-src.zip
+
+      - name: Deploy to Hostinger
+        working-directory: scripts
+        env:
+          HOSTINGER_API_TOKEN: ${{ secrets.HOSTINGER_API_TOKEN }}
+        run: node deploy-hostinger.mjs ../hageclub-src.zip
+
+      - name: Cleanup archive
+        if: always()
+        run: rm -f hageclub-src.zip

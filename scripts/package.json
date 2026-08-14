@@ -1,0 +1,10 @@
+{
+  "name": "hageclub-deploy-scripts",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "axios": "^1.7.0",
+    "tus-js-client": "^4.2.0"
+  }
+}

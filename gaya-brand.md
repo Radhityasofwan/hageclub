@@ -1,0 +1,3 @@
+Terinspirasi dari kultur garage dan komunitas otomotif, kami menciptakan apparel yang nyaman, berkualitas, dan relevan untuk digunakan di jalan maupun dalam keseharian. Sebuah identitas bagi mereka yang hidup dengan passion dan tetap membumi.
+
+HAGE CLUB (Rhinestone Material) menghadirkan craftsmanship dalam setiap detail. Dihiasi rhinestone premium yang dipasang dengan presisi tinggi, koleksi ini dirancang untuk mencerminkan karakter yang elegan, percaya diri, dan berkelas. The Pinnacle of Refined Comfort. 

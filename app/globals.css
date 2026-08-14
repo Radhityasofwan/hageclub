@@ -1,0 +1,288 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: #1c1c1e;
+    --color-background: #ffffff;
+    --color-accent: #f5f5f5;
+    --color-muted: #8e8e93;
+    --color-border: #e5e5ea;
+  }
+
+  * {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+
+  html,
+  body {
+    max-width: 100vw;
+    /* hidden membuat body jadi scroll container sehingga position:sticky mati;
+       clip tidak membentuk scroll container (fallback hidden untuk browser lama) */
+    overflow-x: hidden;
+    overflow-x: clip;
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    background-color: #ffffff;
+    color: #1c1c1e;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Saat input difokus (mobile), gulir elemen di atas action bar fixed checkout */
+  html {
+    scroll-padding-bottom: 5.5rem;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display), system-ui, sans-serif;
+    font-weight: var(--heading-weight, 700);
+    line-height: 1.15;
+    letter-spacing: var(--heading-tracking, -0.02em);
+  }
+
+  /* Fluid type scale — smooth scaling across all breakpoints */
+  h1 { font-size: clamp(2rem, 5vw + 0.5rem, 4.5rem); }
+  h2 { font-size: clamp(1.5rem, 3vw + 0.5rem, 2.5rem); }
+  h3 { font-size: clamp(1.15rem, 2vw + 0.25rem, 1.75rem); }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Tipografi konten deskripsi produk — HTML/plaintext dari admin panel */
+@layer components {  .description-content {
+    font-size: 0.875rem;
+    line-height: 1.65;
+  }
+
+  .description-content p {
+    margin: 0 0 0.75rem;
+  }
+
+  .description-content p:last-child {
+    margin-bottom: 0;
+  }
+
+  .description-content ul,
+  .description-content ol {
+    margin: 0 0 0.75rem;
+    padding-left: 1.25rem;
+  }
+
+  .description-content ul {
+    list-style: disc;
+  }
+
+  .description-content ol {
+    list-style: decimal;
+  }
+
+  .description-content li {
+    margin-bottom: 0.25rem;
+  }
+
+  .description-content li p {
+    margin-bottom: 0.25rem;
+  }
+
+  .description-content strong,
+  .description-content b {
+    font-weight: 600;
+  }
+
+  .description-content em,
+  .description-content i {
+    font-style: italic;
+  }
+
+  .description-content a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .description-content h1,
+  .description-content h2,
+  .description-content h3,
+  .description-content h4,
+  .description-content h5,
+  .description-content h6 {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1.4;
+    margin: 1rem 0 0.5rem;
+  }
+
+  .description-content > :first-child {
+    margin-top: 0;
+  }
+
+  /* ── Rich text editor (Tiptap) di admin ── */
+  .tiptap-editor .ProseMirror {
+    outline: none;
+    min-height: 150px;
+    font-size: 0.875rem;
+    line-height: 1.65;
+  }
+
+  .tiptap-editor .ProseMirror p {
+    margin: 0 0 0.75rem;
+  }
+
+  .tiptap-editor .ProseMirror p:last-child {
+    margin-bottom: 0;
+  }
+
+  .tiptap-editor .ProseMirror ul,
+  .tiptap-editor .ProseMirror ol {
+    margin: 0 0 0.75rem;
+    padding-left: 1.25rem;
+  }
+
+  .tiptap-editor .ProseMirror ul {
+    list-style: disc;
+  }
+
+  .tiptap-editor .ProseMirror ol {
+    list-style: decimal;
+  }
+
+  .tiptap-editor .ProseMirror li {
+    margin-bottom: 0.25rem;
+  }
+
+  .tiptap-editor .ProseMirror li p {
+    margin-bottom: 0.25rem;
+  }
+
+  .tiptap-editor .ProseMirror strong {
+    font-weight: 600;
+  }
+
+  .tiptap-editor .ProseMirror em {
+    font-style: italic;
+  }
+
+  .tiptap-editor .ProseMirror h1,
+  .tiptap-editor .ProseMirror h2,
+  .tiptap-editor .ProseMirror h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    margin: 1rem 0 0.5rem;
+  }
+
+  .tiptap-editor .ProseMirror blockquote {
+    border-left: 2px solid #e5e5ea;
+    padding-left: 0.75rem;
+    color: #636366;
+    margin: 0 0 0.75rem;
+  }
+
+  .tiptap-editor .ProseMirror hr {
+    border: none;
+    border-top: 1px solid #e5e5ea;
+    margin: 1rem 0;
+  }
+
+  .tiptap-editor .ProseMirror code {
+    background: #f5f5f5;
+    border-radius: 2px;
+    padding: 0.1em 0.3em;
+    font-size: 0.85em;
+  }
+
+  .tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    color: #8e8e93;
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+}
+
+/* Announcement bar animations */
+@keyframes announcement-shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+@keyframes announcement-icon {
+  0%, 100% { transform: translateX(0) rotate(0deg); opacity: 0.65; }
+  30%       { transform: translateX(3px) rotate(0deg); opacity: 0.9; }
+  60%       { transform: translateX(1px) rotate(0deg); opacity: 0.8; }
+}
+
+@keyframes announcement-dot {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.4); }
+}
+
+/* Checkout preload overlay */
+@keyframes preload-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes preload-pop {
+  0%   { opacity: 0; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes preload-check {
+  from { stroke-dashoffset: 48; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* Bottom sheet / modal — transisi seragam (masuk & keluar).
+   Curva spring ala iOS: mulai cepat, mendarat halus tanpa overshoot. */
+@layer utilities {
+  .sheet-transition {
+    transition-property: transform, opacity;
+    transition-duration: 350ms;
+    transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+  }
+}
+
+/* Sembunyikan scrollbar horizontal (chip filter, carousel) tanpa mematikan scroll */
+@layer utilities {
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
