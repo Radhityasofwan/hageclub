@@ -24,17 +24,16 @@ export default async function AdminRootLayout({
     "";
 
   const isLoginPage = pathname === "/admin/login";
+  const locale = await getLocale();
 
   if (isLoginPage) {
-    return <>{children}</>;
+    return <I18nProvider locale={locale}>{children}</I18nProvider>;
   }
 
   if (!session) redirect("/admin/login?callbackUrl=/admin");
   if (!["ADMIN", "EDITOR", "CS"].includes(session.user.role)) {
     redirect("/");
   }
-
-  const locale = await getLocale();
   const role = session.user.role;
   const email = session.user.email ?? "";
 
