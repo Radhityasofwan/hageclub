@@ -1,8 +1,11 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import type { UserRole } from "@/types";
+
+type UserWithProfile = Prisma.UserGetPayload<{ include: { profile: true } }>;
 
 declare module "next-auth" {
   interface Session {
@@ -50,7 +53,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        let user: Awaited<ReturnType<typeof db.user.findUnique<{ include: { profile: true } }>>> | null = null;
+        let user: UserWithProfile | null = null;
 
         try {
           user = await db.user.findUnique({
