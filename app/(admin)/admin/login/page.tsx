@@ -26,10 +26,8 @@ export default function AdminLoginPage() {
       });
 
       if (result?.error) {
-        if (result.error.startsWith("DB_ERR:") || result.error.startsWith("BCRYPT_ERR:")) {
-          setError(`[debug] ${result.error}`);
-        } else if (result.error === "SERVER_ERROR") {
-          setError("Server error — check runtime logs");
+        if (result.error === "SERVER_ERROR") {
+          setError("Server error — try again or contact support");
         } else {
           setError("Invalid email or password");
         }

@@ -61,9 +61,8 @@ export const authOptions: NextAuthOptions = {
             include: { profile: true },
           });
         } catch (dbErr) {
-          const msg = (dbErr as Error)?.message ?? "unknown";
           console.error("[NextAuth] DB error during authorize:", dbErr);
-          throw new Error(`DB_ERR:${msg.substring(0, 120)}`);
+          throw new Error("SERVER_ERROR");
         }
 
         if (!user) return null;
@@ -72,9 +71,8 @@ export const authOptions: NextAuthOptions = {
         try {
           isPasswordValid = await bcrypt.compare(credentials.password, user.passwordHash);
         } catch (bcryptErr) {
-          const msg = (bcryptErr as Error)?.message ?? "unknown";
           console.error("[NextAuth] bcrypt error:", bcryptErr);
-          throw new Error(`BCRYPT_ERR:${msg.substring(0, 120)}`);
+          throw new Error("SERVER_ERROR");
         }
 
         if (!isPasswordValid) return null;
