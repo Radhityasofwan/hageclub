@@ -53,6 +53,8 @@ export async function POST(request: NextRequest) {
       // URL pendek agar muat di content JSON (base64 raksasa ditolak content-guard).
       // Prefix /api/uploads dipakai karena static layer hosting tidak menyajikan
       // file yang ditulis saat runtime; route /api/uploads/[...path] yang melayani.
+      // UPLOAD_DIR: direktori persisten di luar build (build dir diganti tiap
+      // deploy); fallback ke public/uploads bila tidak diset.
       const MIME_EXT: Record<string, string> = {
         "image/jpeg": "jpg",
         "image/png": "png",
@@ -69,7 +71,9 @@ export async function POST(request: NextRequest) {
       const fileName = `${Date.now()}-${baseName}.${ext}`;
       const safeFolder = folder.replace(/[^a-z0-9-_]/gi, "").toLowerCase();
       const subDir = safeFolder && safeFolder !== "uploads" ? safeFolder : "";
-      const dir = path.join(process.cwd(), "public", "uploads", subDir);
+      const uploadsRoot =
+        process.env.UPLOAD_DIR || path.join(process.cwd(), "public", "uploads");
+      const dir = path.join(uploadsRoot, subDir);
       fs.mkdirSync(dir, { recursive: true });
       fs.writeFileSync(path.join(dir, fileName), buffer);
       url = `/api/uploads/${subDir ? subDir + "/" : ""}${fileName}`;
