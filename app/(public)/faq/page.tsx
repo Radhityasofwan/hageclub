@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { getFaqItems } from "@/lib/cms";
 import { FaqAccordionList } from "@/components/cms/faq-accordion";
 import { buildFAQSchema } from "@/lib/schema";
-import { getI18n } from "@/lib/i18n/server";
+import { TranslatedText } from "@/components/ui/translated-text";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "FAQ — HAGE CLUB",
@@ -12,7 +12,6 @@ export const metadata: Metadata = {
 };
 
 export default async function FAQPage() {
-  const { t } = await getI18n();
   const items = await getFaqItems();
 
   return (
@@ -27,8 +26,8 @@ export default async function FAQPage() {
       />
       <div className="max-w-3xl mx-auto px-4 py-16">
         <div className="text-center mb-10">
-          <h1 className="text-2xl font-bold">{t("faq.title")}</h1>
-          <p className="text-sm text-muted mt-2">{t("faq.subtitle")}</p>
+          <h1 className="text-2xl font-bold"><TranslatedText k="faq.title" /></h1>
+          <p className="text-sm text-muted mt-2"><TranslatedText k="faq.subtitle" /></p>
         </div>
 
         <FaqAccordionList

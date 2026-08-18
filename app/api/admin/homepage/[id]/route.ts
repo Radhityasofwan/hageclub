@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -38,6 +39,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       },
     });
 
+    revalidateTag("homepage");
     return NextResponse.json({ data: section });
   } catch (error) {
     console.error("Error updating homepage section:", error);
@@ -72,6 +74,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       },
     });
 
+    revalidateTag("homepage");
     return NextResponse.json({ data: section });
   } catch (error) {
     console.error("Error toggling homepage section:", error);
@@ -94,6 +97,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
     await db.homepageSection.delete({ where: { id } });
 
+    revalidateTag("homepage");
     return NextResponse.json({ message: "Section deleted" });
   } catch (error) {
     console.error("Error deleting homepage section:", error);

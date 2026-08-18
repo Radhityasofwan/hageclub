@@ -86,6 +86,10 @@ export function HeroSection({ title, subtitle, content }: Props) {
               src={src}
               alt=""
               aria-hidden={i !== currentIndex}
+              // First slide is the LCP element — prioritise its fetch
+              fetchPriority={i === 0 ? "high" : "low"}
+              loading={i === 0 ? "eager" : "lazy"}
+              decoding={i === 0 ? "sync" : "async"}
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
                 i === currentIndex ? "opacity-100" : "opacity-0"
               }`}

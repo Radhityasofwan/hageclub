@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -60,6 +61,7 @@ export async function POST(request: Request) {
       },
     });
 
+    revalidateTag("homepage");
     return NextResponse.json({ data: section }, { status: 201 });
   } catch (error) {
     console.error("Error creating homepage section:", error);

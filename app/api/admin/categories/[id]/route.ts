@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
+import { revalidateTag } from "next/cache";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { success, error } from "@/lib/api-response";
@@ -65,6 +66,7 @@ export async function PUT(
       },
     });
 
+    revalidateTag("categories");
     return success(category, "Category updated");
   } catch (err) {
     console.error("[PUT /api/admin/categories/[id]]", err);
@@ -101,6 +103,7 @@ export async function PATCH(
 
     const category = await db.category.update({ where: { id }, data });
 
+    revalidateTag("categories");
     return success(category, "Category updated");
   } catch (err) {
     console.error("[PATCH /api/admin/categories/[id]]", err);
@@ -146,6 +149,7 @@ export async function DELETE(
     }
 
     await db.category.delete({ where: { id } });
+    revalidateTag("categories");
     return success(null, "Category deleted");
   } catch (err) {
     console.error("[DELETE /api/admin/categories/[id]]", err);

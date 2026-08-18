@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
+import { revalidateTag } from "next/cache";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { success, error, serverError } from "@/lib/api-response";
@@ -191,6 +192,7 @@ export async function POST(request: NextRequest) {
       include: { images: true, variants: true },
     });
 
+    revalidateTag("products");
     return success(product, "Product created", 201);
   } catch (err) {
     return serverError("Failed to create product", err);

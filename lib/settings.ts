@@ -63,16 +63,33 @@ export async function getSettingValue(key: string): Promise<string | null> {
 }
 
 export async function getSettingValues(keys: string[]): Promise<Record<string, string | null>> {
+  const now = Date.now();
   const map: Record<string, string | null> = {};
+  const missing: string[] = [];
+
+  for (const key of keys) {
+    const cached = cache.get(key);
+    if (cached && cached.expiresAt > now) {
+      map[key] = cached.value;
+    } else {
+      missing.push(key);
+    }
+  }
+
+  if (missing.length === 0) return map;
+
   try {
-    const rows = await db.systemSetting.findMany({ where: { key: { in: keys } } });
-    for (const key of keys) {
+    const rows = await db.systemSetting.findMany({ where: { key: { in: missing } } });
+    for (const key of missing) {
       const row = rows.find((r) => r.key === key);
-      map[key] = row?.value ?? ENV_FALLBACK[key] ?? null;
+      const value = row?.value ?? ENV_FALLBACK[key] ?? null;
+      map[key] = value;
+      cache.set(key, { value, expiresAt: now + CACHE_TTL_MS });
     }
   } catch {
-    for (const key of keys) map[key] = ENV_FALLBACK[key] ?? null;
+    for (const key of missing) map[key] = ENV_FALLBACK[key] ?? null;
   }
+
   return map;
 }
 

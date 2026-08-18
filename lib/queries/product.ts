@@ -1,3 +1,5 @@
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
 import type {
   ProductCardData,
@@ -204,9 +206,10 @@ export async function getProducts(
   };
 }
 
-export async function getProductBySlug(
+// cache() deduplicates this within a single request — prevents generateMetadata + page from making 2 DB calls
+export const getProductBySlug = cache(async (
   slug: string
-): Promise<ProductDetail | null> {
+): Promise<ProductDetail | null> => {
   const raw = await db.product.findFirst({
     where: { slug, status: "PUBLISHED" },
     select: productDetailSelect,
@@ -245,7 +248,7 @@ export async function getProductBySlug(
     createdAt: raw.createdAt,
     updatedAt: raw.updatedAt,
   };
-}
+});
 
 /** Satu produk untuk template Featured Product (full screen) di homepage. */
 export async function getFeaturedProductCard(
@@ -258,49 +261,68 @@ export async function getFeaturedProductCard(
   return raw ? mapProductCard(raw) : null;
 }
 
-export async function getFeaturedProducts(limit = 8): Promise<ProductCardData[]> {
-  const products = await db.product.findMany({
-    where: { status: "PUBLISHED", featured: true, category: { active: true } },
-    select: productCardSelect,
-    orderBy: { createdAt: "desc" },
-    take: limit,
-  });
-  return products.map(mapProductCard);
+// Each parametrized query wraps unstable_cache with args included in the key
+// so different (limit, slug) combinations get independent cache entries.
+
+export function getFeaturedProducts(limit = 8): Promise<ProductCardData[]> {
+  return unstable_cache(
+    async () => {
+      const products = await db.product.findMany({
+        where: { status: "PUBLISHED", featured: true, category: { active: true } },
+        select: productCardSelect,
+        orderBy: { createdAt: "desc" },
+        take: limit,
+      });
+      return products.map(mapProductCard);
+    },
+    ["featured-products", String(limit)],
+    { revalidate: 300, tags: ["products"] }
+  )();
 }
 
-export async function getNewArrivals(limit = 8): Promise<ProductCardData[]> {
-  const products = await db.product.findMany({
-    where: { status: "PUBLISHED", category: { active: true } },
-    select: productCardSelect,
-    orderBy: { createdAt: "desc" },
-    take: limit,
-  });
-  return products.map(mapProductCard);
+export function getNewArrivals(limit = 8): Promise<ProductCardData[]> {
+  return unstable_cache(
+    async () => {
+      const products = await db.product.findMany({
+        where: { status: "PUBLISHED", category: { active: true } },
+        select: productCardSelect,
+        orderBy: { createdAt: "desc" },
+        take: limit,
+      });
+      return products.map(mapProductCard);
+    },
+    ["new-arrivals", String(limit)],
+    { revalidate: 300, tags: ["products"] }
+  )();
 }
 
-export async function getBestSellers(limit = 8): Promise<ProductCardData[]> {
-  // Join with OrderItems to get actual sales count
-  const topIds = await db.orderItem.groupBy({
-    by: ["productId"],
-    _sum: { quantity: true },
-    orderBy: { _sum: { quantity: "desc" } },
-    take: limit,
-  });
+export function getBestSellers(limit = 8): Promise<ProductCardData[]> {
+  return unstable_cache(
+    async () => {
+      const topIds = await db.orderItem.groupBy({
+        by: ["productId"],
+        _sum: { quantity: true },
+        orderBy: { _sum: { quantity: "desc" } },
+        take: limit,
+      });
 
-  if (!topIds.length) return getNewArrivals(limit);
+      if (!topIds.length) return getNewArrivals(limit);
 
-  const ids = topIds.map((r) => r.productId);
-  const products = await db.product.findMany({
-    where: { id: { in: ids }, status: "PUBLISHED", category: { active: true } },
-    select: productCardSelect,
-  });
+      const ids = topIds.map((r) => r.productId);
+      const products = await db.product.findMany({
+        where: { id: { in: ids }, status: "PUBLISHED", category: { active: true } },
+        select: productCardSelect,
+      });
 
-  // Restore order from groupBy
-  const productMap = new Map(products.map((p) => [p.id, p]));
-  return ids
-    .map((id) => productMap.get(id))
-    .filter(Boolean)
-    .map((p) => mapProductCard(p!));
+      const productMap = new Map(products.map((p) => [p.id, p]));
+      return ids
+        .map((id) => productMap.get(id))
+        .filter(Boolean)
+        .map((p) => mapProductCard(p!));
+    },
+    ["best-sellers", String(limit)],
+    { revalidate: 600, tags: ["products", "orders"] }
+  )();
 }
 
 export async function getRelatedProducts(
@@ -354,41 +376,45 @@ export async function getAllProductSlugs(): Promise<string[]> {
 // CATEGORIES
 // =============================================================================
 
-export async function getCategories(): Promise<CategoryWithChildren[]> {
-  const all = await db.category.findMany({
-    where: { active: true },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      description: true,
-      banner: true,
-      parentId: true,
-      sortOrder: true,
-      seoTitle: true,
-      seoDescription: true,
-    },
-    orderBy: { sortOrder: "asc" },
-  });
+export const getCategories = unstable_cache(
+  async (): Promise<CategoryWithChildren[]> => {
+    const all = await db.category.findMany({
+      where: { active: true },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        banner: true,
+        parentId: true,
+        sortOrder: true,
+        seoTitle: true,
+        seoDescription: true,
+      },
+      orderBy: { sortOrder: "asc" },
+    });
 
-  const rootCategories: CategoryWithChildren[] = [];
-  const byId = new Map<string, CategoryWithChildren>();
+    const rootCategories: CategoryWithChildren[] = [];
+    const byId = new Map<string, CategoryWithChildren>();
 
-  for (const cat of all) {
-    byId.set(cat.id, { ...cat, children: [] });
-  }
-
-  for (const cat of all) {
-    const node = byId.get(cat.id)!;
-    if (cat.parentId && byId.has(cat.parentId)) {
-      byId.get(cat.parentId)!.children.push(node);
-    } else {
-      rootCategories.push(node);
+    for (const cat of all) {
+      byId.set(cat.id, { ...cat, children: [] });
     }
-  }
 
-  return rootCategories;
-}
+    for (const cat of all) {
+      const node = byId.get(cat.id)!;
+      if (cat.parentId && byId.has(cat.parentId)) {
+        byId.get(cat.parentId)!.children.push(node);
+      } else {
+        rootCategories.push(node);
+      }
+    }
+
+    return rootCategories;
+  },
+  ["categories"],
+  { revalidate: 3600, tags: ["categories"] }
+);
 
 export async function getCategoryBySlug(
   slug: string
@@ -417,21 +443,24 @@ export async function getAllCategorySlugs(): Promise<string[]> {
 }
 
 /** Featured-first highlights — used for homepage catalog tabs */
-export async function getCatalogHighlights(
-  limit: number = 8,
-  categorySlug?: string
-): Promise<ProductCardData[]> {
-  const products = await db.product.findMany({
-    where: {
-      status: "PUBLISHED",
-      category: {
-        active: true,
-        ...(categorySlug ? { slug: categorySlug } : {}),
-      },
+export function getCatalogHighlights(limit: number = 8, categorySlug?: string): Promise<ProductCardData[]> {
+  return unstable_cache(
+    async () => {
+      const products = await db.product.findMany({
+        where: {
+          status: "PUBLISHED",
+          category: {
+            active: true,
+            ...(categorySlug ? { slug: categorySlug } : {}),
+          },
+        },
+        select: productCardSelect,
+        orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+        take: limit,
+      });
+      return products.map(mapProductCard);
     },
-    select: productCardSelect,
-    orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
-    take: limit,
-  });
-  return products.map(mapProductCard);
+    ["catalog-highlights", String(limit), categorySlug ?? "all"],
+    { revalidate: 300, tags: ["products"] }
+  )();
 }

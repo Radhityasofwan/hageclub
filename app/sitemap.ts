@@ -15,7 +15,7 @@ const staticPages: Array<{ path: string; priority: number; changeFreq: "daily" |
   { path: "/shipping-info", priority: 0.4, changeFreq: "monthly" },
 ];
 
-export const dynamic = "force-dynamic";
+export const revalidate = 86400; // regenerate daily
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let products: { slug: string; updatedAt: Date }[] = [];

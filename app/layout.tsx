@@ -58,26 +58,41 @@ const oxygen     = localFont({
   variable: "--font-oxygen",
 });
 
-const allFontClasses = [
-  spaceGrotesk.variable, barlowCondensed.variable, syne.variable,
-  raleway.variable, bebasNeue.variable, josefinSans.variable,
-  exo2.variable, montserrat.variable,
-  rajdhani.variable, russoOne.variable, bigShouldersDisplay.variable,
-  oswald.variable, teko.variable, anton.variable, cormorantGaramond.variable,
-  outfit.variable, dmSans.variable, plusJakartaSans.variable,
-  inter.variable, nunitoSans.variable, karla.variable,
-  jost.variable, urbanist.variable, manrope.variable, workSans.variable,
-  ledger.variable, googleSans.variable, oxygen.variable,
-].join(" ");
+// Map font ID → CSS variable class
+const fontVariableById: Record<string, string> = {
+  "space-grotesk": spaceGrotesk.variable,
+  "barlow-condensed": barlowCondensed.variable,
+  "syne": syne.variable,
+  "raleway": raleway.variable,
+  "bebas-neue": bebasNeue.variable,
+  "josefin-sans": josefinSans.variable,
+  "exo-2": exo2.variable,
+  "montserrat": montserrat.variable,
+  "rajdhani": rajdhani.variable,
+  "russo-one": russoOne.variable,
+  "big-shoulders-display": bigShouldersDisplay.variable,
+  "oswald": oswald.variable,
+  "teko": teko.variable,
+  "anton": anton.variable,
+  "cormorant-garamond": cormorantGaramond.variable,
+  "outfit": outfit.variable,
+  "dm-sans": dmSans.variable,
+  "plus-jakarta-sans": plusJakartaSans.variable,
+  "inter": inter.variable,
+  "nunito-sans": nunitoSans.variable,
+  "karla": karla.variable,
+  "jost": jost.variable,
+  "urbanist": urbanist.variable,
+  "manrope": manrope.variable,
+  "work-sans": workSans.variable,
+  "ledger": ledger.variable,
+  "google-sans": googleSans.variable,
+  "oxygen": oxygen.variable,
+};
 
 export async function generateMetadata(): Promise<Metadata> {
-  let favicon = "/favicon.svg";
-  try {
-    const settings = await getSettingValues(["brand_favicon"]);
-    if (settings.brand_favicon) favicon = settings.brand_favicon;
-  } catch {
-    // fallback favicon if settings query fails
-  }
+  const settings = await getSettingValues(["brand_favicon"]);
+  const favicon = settings.brand_favicon ?? "/favicon.svg";
 
   return {
     title: {
@@ -110,10 +125,8 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const { headers } = await import("next/headers");
-  const headersList = await headers();
-  const locale = headersList.get("x-locale") ?? "id";
-
+  // No headers() call here — root layout is not forced dynamic.
+  // Font settings fetched from in-memory cache (5-min TTL).
   const fontSettings = await getSettingValues(["brand_font_display", "brand_font_body"]);
   const displayId = ALL_FONT_IDS.has(fontSettings.brand_font_display ?? "")
     ? (fontSettings.brand_font_display as string)
@@ -123,13 +136,26 @@ export default async function RootLayout({
     : DEFAULT_BODY_FONT;
 
   const displayFont = DISPLAY_FONTS.find(f => f.id === displayId) ?? DISPLAY_FONTS[0];
-
   const fontCss = `:root{--font-display:var(${FONT_CSS_VAR[displayId]});--font-sans:var(${FONT_CSS_VAR[bodyId]});--heading-weight:${displayFont.headingWeight};--heading-tracking:${displayFont.headingTracking};}`;
 
+  // Public pages: only inject the 2 active fonts into the HTML class list.
+  // Next.js only emits @font-face CSS for fonts whose .variable class is rendered,
+  // so inactive fonts are excluded from the CSS payload (significant size reduction).
+  const fontClasses = [
+    fontVariableById[displayId] ?? spaceGrotesk.variable,
+    displayId !== bodyId ? (fontVariableById[bodyId] ?? outfit.variable) : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <html lang={locale} className={allFontClasses}>
+    // lang="id" is the default; I18nProvider corrects it client-side from cookie for EN users.
+    <html lang="id" className={fontClasses}>
       <head>
         <style dangerouslySetInnerHTML={{ __html: fontCss }} />
+        {/* Preconnect to image CDN for faster LCP */}
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
       </head>
       <body>
         <SessionProvider>{children}</SessionProvider>

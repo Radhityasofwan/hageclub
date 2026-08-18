@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getCmsPage } from "@/lib/cms";
 import { CmsContent } from "@/components/cms/cms-content";
-import { getI18n } from "@/lib/i18n/server";
+import { TranslatedText } from "@/components/ui/translated-text";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 const FALLBACK_TITLE = "Tentang — HAGE CLUB";
 const FALLBACK_DESC =
@@ -20,7 +20,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function AboutPage() {
-  const { t } = await getI18n();
   const page = await getCmsPage("about");
   if (!page) notFound();
 
@@ -54,7 +53,7 @@ export default async function AboutPage() {
           href="/shop"
           className="inline-block mt-10 h-10 px-6 bg-primary text-white text-sm font-medium rounded hover:bg-primary/90 transition-colors leading-10"
         >
-          {t("about.shopCollection")}
+          <TranslatedText k="about.shopCollection" />
         </Link>
       </div>
     </div>

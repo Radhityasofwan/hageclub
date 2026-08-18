@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
+import { revalidateTag } from "next/cache";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { success, error, serverError } from "@/lib/api-response";
@@ -177,6 +178,7 @@ export async function PUT(
       return updated;
     });
 
+    revalidateTag("products");
     return success(product, "Product updated");
   } catch (err) {
     return serverError("Failed to update product", err);
@@ -205,6 +207,7 @@ export async function DELETE(
 
     await db.product.delete({ where: { id } });
 
+    revalidateTag("products");
     return success(null, "Product deleted");
   } catch (err) {
     return serverError("Failed to delete product", err);

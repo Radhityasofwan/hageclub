@@ -4,6 +4,8 @@ import { buildWebPageSchema } from "@/lib/schema";
 import { getActiveSections } from "@/lib/queries/homepage";
 import { SectionRenderer } from "@/components/homepage/section-renderer";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = buildMetadata({
   title: "HAGE CLUB — The Pinnacle of Refined Comfort",
   description:

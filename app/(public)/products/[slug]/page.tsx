@@ -4,8 +4,7 @@ import type { Metadata } from "next";
 import { getProductBySlug } from "@/lib/queries/product";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductActions } from "./product-actions";
-import { Badge } from "@/components/ui/badge";
-import { getI18n } from "@/lib/i18n/server";
+import { NewBadge } from "@/components/product/new-badge";
 import { buildProductMetadata } from "@/lib/seo";
 import { buildProductSchema, buildBreadcrumbSchema } from "@/lib/schema";
 import { getSettingValue } from "@/lib/settings";
@@ -26,8 +25,6 @@ export async function generateMetadata({
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const { t } = await getI18n();
-
   const [product, waNumber, couponCount] = await Promise.all([
     getProductBySlug(params.slug),
     getSettingValue("whatsapp_number"),
@@ -82,9 +79,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 >
                   {product.category.name}
                 </Link>
-                {product.isNew && (
-                  <Badge variant="info" size="sm">{t("product.newBadge")}</Badge>
-                )}
+                {product.isNew && <NewBadge />}
               </div>
               <h1 className="text-lg sm:text-xl font-bold tracking-tight leading-snug text-foreground">
                 {product.name}
