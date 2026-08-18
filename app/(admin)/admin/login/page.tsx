@@ -26,7 +26,11 @@ export default function AdminLoginPage() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password");
+        if (result.error === "SERVER_ERROR") {
+          setError("Server error — check runtime logs");
+        } else {
+          setError("Invalid email or password");
+        }
         return;
       }
 

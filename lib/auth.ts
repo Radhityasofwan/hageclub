@@ -47,26 +47,32 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email and password are required");
+          return null;
         }
 
-        const user = await db.user.findUnique({
-          where: { email: credentials.email },
-          include: { profile: true },
-        });
+        let user: Awaited<ReturnType<typeof db.user.findUnique<{ include: { profile: true } }>>> | null = null;
 
-        if (!user) {
-          throw new Error("Invalid email or password");
+        try {
+          user = await db.user.findUnique({
+            where: { email: credentials.email },
+            include: { profile: true },
+          });
+        } catch (dbErr) {
+          console.error("[NextAuth] DB error during authorize:", dbErr);
+          throw new Error("SERVER_ERROR");
         }
 
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.passwordHash
-        );
+        if (!user) return null;
 
-        if (!isPasswordValid) {
-          throw new Error("Invalid email or password");
+        let isPasswordValid = false;
+        try {
+          isPasswordValid = await bcrypt.compare(credentials.password, user.passwordHash);
+        } catch (bcryptErr) {
+          console.error("[NextAuth] bcrypt error:", bcryptErr);
+          throw new Error("SERVER_ERROR");
         }
+
+        if (!isPasswordValid) return null;
 
         if (user.role === "CUSTOMER" && !user.emailVerified) {
           throw new Error("EMAIL_NOT_VERIFIED");
