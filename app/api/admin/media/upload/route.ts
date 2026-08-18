@@ -51,6 +51,8 @@ export async function POST(request: NextRequest) {
     } else {
       // Mode lokal (tanpa Cloudinary): simpan sebagai file di public/uploads —
       // URL pendek agar muat di content JSON (base64 raksasa ditolak content-guard).
+      // Prefix /api/uploads dipakai karena static layer hosting tidak menyajikan
+      // file yang ditulis saat runtime; route /api/uploads/[...path] yang melayani.
       const MIME_EXT: Record<string, string> = {
         "image/jpeg": "jpg",
         "image/png": "png",
@@ -70,7 +72,7 @@ export async function POST(request: NextRequest) {
       const dir = path.join(process.cwd(), "public", "uploads", subDir);
       fs.mkdirSync(dir, { recursive: true });
       fs.writeFileSync(path.join(dir, fileName), buffer);
-      url = `/uploads/${subDir ? subDir + "/" : ""}${fileName}`;
+      url = `/api/uploads/${subDir ? subDir + "/" : ""}${fileName}`;
       publicId = fileName;
     }
 
