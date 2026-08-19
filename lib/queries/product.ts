@@ -378,9 +378,8 @@ export async function getAllProductSlugs(): Promise<string[]> {
 
 export const getCategories = unstable_cache(
   async (): Promise<CategoryWithChildren[]> => {
-    let all: Awaited<ReturnType<typeof db.category.findMany>>;
     try {
-      all = await db.category.findMany({
+      const all = await db.category.findMany({
         where: { active: true },
         select: {
           id: true,
@@ -395,27 +394,27 @@ export const getCategories = unstable_cache(
         },
         orderBy: { sortOrder: "asc" },
       });
+
+      const rootCategories: CategoryWithChildren[] = [];
+      const byId = new Map<string, CategoryWithChildren>();
+
+      for (const cat of all) {
+        byId.set(cat.id, { ...cat, children: [] });
+      }
+
+      for (const cat of all) {
+        const node = byId.get(cat.id)!;
+        if (cat.parentId && byId.has(cat.parentId)) {
+          byId.get(cat.parentId)!.children.push(node);
+        } else {
+          rootCategories.push(node);
+        }
+      }
+
+      return rootCategories;
     } catch {
       return [];
     }
-
-    const rootCategories: CategoryWithChildren[] = [];
-    const byId = new Map<string, CategoryWithChildren>();
-
-    for (const cat of all) {
-      byId.set(cat.id, { ...cat, children: [] });
-    }
-
-    for (const cat of all) {
-      const node = byId.get(cat.id)!;
-      if (cat.parentId && byId.has(cat.parentId)) {
-        byId.get(cat.parentId)!.children.push(node);
-      } else {
-        rootCategories.push(node);
-      }
-    }
-
-    return rootCategories;
   },
   ["categories"],
   { revalidate: 3600, tags: ["categories"] }
