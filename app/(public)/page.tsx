@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { preload } from "react-dom";
 import { buildMetadata } from "@/lib/seo";
 import { buildWebPageSchema } from "@/lib/schema";
 import { getActiveSections } from "@/lib/queries/homepage";
 import { SectionRenderer } from "@/components/homepage/section-renderer";
+import type { HeroContent } from "@/components/homepage/hero-section";
 
 export const revalidate = 3600;
 
@@ -20,6 +22,15 @@ export default async function HomePage() {
   });
 
   const sections = await getActiveSections();
+
+  // Preload LCP hero image from the server so the browser fetches it before
+  // JS hydration — without this, the client-component hero causes ~3-4s LCP delay.
+  const heroSection = sections.find((s) => s.type === "hero");
+  const heroContent = heroSection?.content as HeroContent | null;
+  const lcpImageUrl = heroContent?.bgImages?.[0]?.url ?? heroContent?.bgImage ?? null;
+  if (lcpImageUrl) {
+    preload(lcpImageUrl, { as: "image", fetchPriority: "high" });
+  }
 
   return (
     <>

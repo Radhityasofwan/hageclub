@@ -22,7 +22,8 @@ export function BannerSection({ title, subtitle, content }: Props) {
       {/* Background */}
       {c.bgImage ? (
         <>
-          <img src={c.bgImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={c.bgImage} alt="" width={1920} height={1080} className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/50" />
         </>
       ) : (

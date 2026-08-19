@@ -85,8 +85,9 @@ export function HeroSection({ title, subtitle, content }: Props) {
               key={`${src}-${i}`}
               src={src}
               alt=""
+              width={1920}
+              height={1080}
               aria-hidden={i !== currentIndex}
-              // First slide is the LCP element — prioritise its fetch
               fetchPriority={i === 0 ? "high" : "low"}
               loading={i === 0 ? "eager" : "lazy"}
               decoding={i === 0 ? "sync" : "async"}

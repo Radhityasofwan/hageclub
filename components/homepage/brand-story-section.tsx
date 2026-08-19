@@ -25,9 +25,14 @@ export function BrandStorySection({ title, subtitle, content }: Props) {
           {/* Image */}
           {c.image && (
             <div className="relative aspect-[4/3] rounded overflow-hidden bg-accent order-first lg:order-none">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={c.image}
                 alt={title ?? "Brand story"}
+                width={800}
+                height={600}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
             </div>

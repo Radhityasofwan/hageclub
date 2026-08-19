@@ -42,7 +42,8 @@ export function TestimonialsSection({ title, subtitle, content }: Props) {
               )}
               <div className="flex items-center gap-3">
                 {item.avatar ? (
-                  <img src={item.avatar} alt={item.name ?? ""} className="w-9 h-9 rounded-full object-cover" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={item.avatar} alt={item.name ?? ""} width={36} height={36} loading="lazy" decoding="async" className="w-9 h-9 rounded-full object-cover" />
                 ) : (
                   <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold">
                     {item.name?.charAt(0) ?? "?"}
