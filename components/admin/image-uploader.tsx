@@ -40,8 +40,8 @@ export function ImageUploader({
         const newImages: ImageItem[] = [];
 
         for (const file of files) {
-          if (file.size > 5 * 1024 * 1024) {
-            alert(`${file.name} melebihi 5MB, dilewati`);
+          if (file.size > 40 * 1024 * 1024) {
+            alert(`${file.name} melebihi 40MB, dilewati`);
             continue;
           }
 
@@ -212,7 +212,7 @@ export function ImageUploader({
       </div>
 
       <p className="text-[10px] text-muted">
-        Drag or click to upload. Click Cover to set the main product image. Max 5MB per image.
+        Drag or click to upload. Click Cover to set the main product image. Max 40MB per image.
       </p>
     </div>
   );

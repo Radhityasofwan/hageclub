@@ -37,8 +37,8 @@ export function UploadField({
     e.target.value = "";
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      setError("File maksimal 5MB");
+    if (file.size > 40 * 1024 * 1024) {
+      setError("File maksimal 40MB");
       return;
     }
 
