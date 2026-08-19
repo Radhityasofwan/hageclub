@@ -106,7 +106,7 @@ async function triggerBuild(buildSettings) {
   const buildData = {
     ...(buildSettings || {}),
     node_version: 22,
-    build_command: 'npm install && npx prisma generate && npx prisma migrate deploy && npm run build && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public',
+    build_command: 'npm install && npx prisma generate && npx prisma migrate deploy && npm run build && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public && mkdir -p /home/u830768701/domains/hageclub.com/uploads && rm -rf .next/standalone/public/uploads && ln -sfn /home/u830768701/domains/hageclub.com/uploads .next/standalone/public/uploads',
     start_command: 'UPLOAD_DIR=/home/u830768701/domains/hageclub.com/uploads node .next/standalone/server.js',
     source_type: 'archive',
     source_options: { archive_path: path.basename(ARCHIVE_PATH) },
