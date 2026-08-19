@@ -73,7 +73,12 @@ export interface CmsPageData {
 // Fallback ke konten default hanya berlaku saat tabel masih kosong (fresh install
 // sebelum seed) — jika admin menghapus halaman, halaman benar-benar tidak ada.
 export const getCmsPage = cache(async (slug: string): Promise<CmsPageData | null> => {
-  const row = await db.cmsPage.findUnique({ where: { slug } });
+  let row: Awaited<ReturnType<typeof db.cmsPage.findUnique>> | null;
+  try {
+    row = await db.cmsPage.findUnique({ where: { slug } });
+  } catch {
+    return null;
+  }
   if (row) {
     return {
       id: row.id,

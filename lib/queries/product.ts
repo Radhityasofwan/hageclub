@@ -378,21 +378,26 @@ export async function getAllProductSlugs(): Promise<string[]> {
 
 export const getCategories = unstable_cache(
   async (): Promise<CategoryWithChildren[]> => {
-    const all = await db.category.findMany({
-      where: { active: true },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        description: true,
-        banner: true,
-        parentId: true,
-        sortOrder: true,
-        seoTitle: true,
-        seoDescription: true,
-      },
-      orderBy: { sortOrder: "asc" },
-    });
+    let all: Awaited<ReturnType<typeof db.category.findMany>>;
+    try {
+      all = await db.category.findMany({
+        where: { active: true },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          banner: true,
+          parentId: true,
+          sortOrder: true,
+          seoTitle: true,
+          seoDescription: true,
+        },
+        orderBy: { sortOrder: "asc" },
+      });
+    } catch {
+      return [];
+    }
 
     const rootCategories: CategoryWithChildren[] = [];
     const byId = new Map<string, CategoryWithChildren>();
