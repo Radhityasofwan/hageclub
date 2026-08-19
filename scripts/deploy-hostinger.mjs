@@ -106,7 +106,7 @@ async function triggerBuild(buildSettings) {
   const buildData = {
     ...(buildSettings || {}),
     node_version: 22,
-    build_command: 'npx prisma generate && npx prisma migrate deploy && npm run build && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public',
+    build_command: 'npm install && npx prisma generate && npx prisma migrate deploy && npm run build && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public',
     start_command: 'node .next/standalone/server.js',
     source_type: 'archive',
     source_options: { archive_path: path.basename(ARCHIVE_PATH) },

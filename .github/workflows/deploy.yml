@@ -20,8 +20,10 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Create .env.production
-        run: printf '%s' "$ENV_PRODUCTION" > .env.production
+      - name: Create env files
+        run: |
+          printf '%s' "$ENV_PRODUCTION" > .env.production
+          printf '%s' "$ENV_PRODUCTION" > .env
         env:
           ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
 
